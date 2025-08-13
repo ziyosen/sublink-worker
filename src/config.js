@@ -1,5 +1,5 @@
 import { t } from './i18n';
-export const SITE_RULE_SET_BASE_URL = 'https://testingcf.jsdelivr.net/gh/lyc8503/sing-box-rules@rule-set-geosite/geosite-cn.srs';
+export const SITE_RULE_SET_BASE_URL = 'https://edgeone.gh-proxy.com/https://github.com/lyc8503/sing-box-rules/blob/rule-set-geoip/geoip-cn.srs';
 export const IP_RULE_SET_BASE_URL = 'https://testingcf.jsdelivr.net/gh/lyc8503/sing-box-rules@rule-set-geoip/geoip-cn.srs';
 export const CLASH_SITE_RULE_SET_BASE_URL = 'https://gh-proxy.com/https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/';
 export const CLASH_IP_RULE_SET_BASE_URL = 'https://gh-proxy.com/https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geoip/';
