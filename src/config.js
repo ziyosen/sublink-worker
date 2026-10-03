@@ -386,42 +386,33 @@ export const SING_BOX_CONFIG = {
 	dns: {
 		servers: [
 			{
+				type: "tcp",
 				tag: "dns_proxy",
-				address: "tcp://1.1.1.1",
-				address_resolver: "dns_resolver",
-				strategy: "ipv4_only",
+				server: "1.1.1.1",
+				domain_resolver: "dns_resolver",
 				detour: "🚀 节点选择"
 			},
 			{
-				tag: "dns_direct", 
-				address: "https://dns.alidns.com/dns-query",
-				address_resolver: "dns_resolver",
-				strategy: "ipv4_only",
+				type: "https",
+				tag: "dns_direct",
+				server: "dns.alidns.com",
+				domain_resolver: "dns_resolver",
 				detour: "DIRECT"
 			},
 			{
+				type: "udp",
 				tag: "dns_resolver",
-				address: "223.5.5.5",
+				server: "223.5.5.5",
 				detour: "DIRECT"
 			},
 			{
-				tag: "dns_success",
-				address: "rcode://success"
-			},
-			{
-				tag: "dns_refused",
-				address: "rcode://refused"
-			},
-			{
+				type: "fakeip",
 				tag: "dns_fakeip",
-				address: "fakeip"
+				inet4_range: "198.18.0.0/15",
+				inet6_range: "fc00::/18"
 			}
 		],
 		rules: [
-			{
-				outbound: "any",
-				server: "dns_resolver"
-			},
 			{
 				rule_set: "geolocation-!cn",
 				query_type: [
@@ -444,17 +435,12 @@ export const SING_BOX_CONFIG = {
 					"CNAME"
 				],
 				invert: true,
-				server: "dns_refused",
-				disable_cache: true
+				action: "predefined",
+				rcode: "REFUSED"
 			}
 		],
 		final: "dns_direct",
-		independent_cache: true,
-		fakeip: {
-			enabled: true,
-			inet4_range: "198.18.0.0/15",
-			inet6_range: "fc00::/18"
-		}
+		strategy: "ipv4_only"
 	},
 	ntp: {
 		enabled: true,
@@ -464,13 +450,16 @@ export const SING_BOX_CONFIG = {
 	},
 	inbounds: [
 		{ type: 'mixed', tag: 'mixed-in', listen: '0.0.0.0', listen_port: 2080 },
-		{ type: 'tun', tag: 'tun-in', address: '172.19.0.1/30', auto_route: true, strict_route: true, stack: 'mixed', sniff: true }
+		{ type: 'tun', tag: 'tun-in', address: '172.19.0.1/30', auto_route: true, strict_route: true, stack: 'mixed' }
 	],
 	outbounds: [
 		{ type: 'block', tag: 'REJECT' },
 		{ type: "direct", tag: 'DIRECT' }
 	],
 	route : {
+		"default_domain_resolver": {
+			"server": "dns_resolver"
+		},
 		"rule_set": [
             {
                 "tag": "geosite-geolocation-!cn",
