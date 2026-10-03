@@ -397,13 +397,11 @@ export const SING_BOX_CONFIG = {
 				tag: "dns_direct",
 				server: "dns.alidns.com",
 				domain_resolver: "dns_resolver",
-				detour: "DIRECT"
 			},
 			{
 				type: "udp",
 				tag: "dns_resolver",
 				server: "223.5.5.5",
-				detour: "DIRECT"
 			},
 			{
 				type: "fakeip",
