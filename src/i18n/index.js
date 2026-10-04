@@ -1,4 +1,4 @@
-import {checkStartsWith} from "../utils";
+import {checkStartsWith} from "../utils.js";
 // 定义语言包
 const translations = {
 'zh-CN': {
@@ -100,6 +100,10 @@ jsonValidationErrors: 'JSON validation errors',
       'Financial': '💰 Financial Services',
       'Cloud Services': '☁️ Cloud Services',
       'Non-China': '🌐 Non-China',
+      'Indonesia': '🇮🇩 印度尼西亚',
+      'Communication': '📞 通讯',
+      'Streaming ID': '🍿 印尼流媒体',
+      'E-commerce': '🛒 电商',
       'GLOBAL': 'GLOBAL'
     },
     UASettings: '自定义UserAgent',
@@ -204,6 +208,10 @@ jsonValidationErrors: 'JSON validation errors',
       'Financial': '💰 Financial Services',
       'Cloud Services': '☁️ Cloud Services',
       'Non-China': '🌐 Non-China',
+      'Indonesia': '🇮🇩 Indonesia',
+      'Communication': '📞 Communication',
+      'Streaming ID': '🍿 Streaming ID',
+      'E-commerce': '🛒 E-commerce',
       'GLOBAL': 'GLOBAL'
     },
     UASettings: 'Custom UserAgent',
@@ -308,6 +316,10 @@ jsonValidationErrors: 'JSON validation errors',
       'Financial': '💰 سرویس‌های مالی',
       'Cloud Services': '☁️ سرویس‌های ابری',
       'Non-China': '🌐 خارج از چین',
+      'Indonesia': '🇮🇩 اندونزی',
+      'Communication': '📞 ارتباطات',
+      'Streaming ID': '🍿 استریم اندونزی',
+      'E-commerce': '🛒 تجارت الکترونیک',
       'GLOBAL': 'GLOBAL'
     },
     UASettings: 'UserAgent سفارشی',
@@ -412,12 +424,59 @@ jsonValidationErrors: 'JSON validation errors',
       'Financial': '💰 Финансовые сервисы',
       'Cloud Services': '☁️ Облачные сервисы',
       'Non-China': '🌐 За пределами Китая',
+      'Indonesia': '🇮🇩 Индонезия',
+      'Communication': '📞 Связь',
+      'Streaming ID': '🍿 Стриминг Индонезии',
+      'E-commerce': '🛒 Электронная коммерция',
       'GLOBAL': 'GLOBAL'
     },
     UASettings: 'Пользовательский UserAgent',
     UAtip: 'По умолчанию используется curl/7.74.0'
   }
 };
+
+
+// Indonesian locale — derived from en-US with localised UI strings.
+translations['id-ID'] = Object.assign({}, translations['en-US'], {
+  pageDescription: 'Sublink Worker - Konverter Link Langganan',
+  pageTitle: 'Sublink Worker — Konverter Langganan',
+  ogTitle: 'Sublink Worker — Konverter Langganan',
+  ogDescription: 'Konverter link langganan ke Sing-Box, Clash, Xray, dan Surge',
+  shareUrls: 'Link Langganan',
+  urlPlaceholder: 'Tempel link langganan di sini (boleh juga tempel link hasil generate sebelumnya)...',
+  advancedOptions: 'Opsi Lanjutan',
+  baseConfigSettings: 'Pengaturan Base Config',
+  baseConfigTooltip: 'Sesuaikan base config kamu di sini',
+  saveConfig: 'Simpan Config',
+  clearConfig: 'Hapus Config',
+  convert: 'Generate Link',
+  clear: 'Bersihkan',
+  customPath: 'Path Kustom',
+  savedPaths: 'Path Tersimpan',
+  shortenLinks: 'Buat Link Pendek',
+  ruleSelection: 'Pilihan Aturan (Rule)',
+  ruleSelectionTooltip: 'Pilih rule set yang kamu butuhkan',
+  custom: 'Kustom',
+  minimal: 'Minimal',
+  balanced: 'Seimbang',
+  comprehensive: 'Lengkap',
+  customRulesSection: 'Aturan Kustom',
+  customRulesSectionTooltip: 'Buat aturan routing kustom untuk mengatur perilaku trafik. Bisa lewat form atau JSON.',
+  customRulesForm: 'Tampilan Form',
+  customRulesJSON: 'Tampilan JSON',
+  addCustomRule: 'Tambah Aturan',
+  clearAll: 'Hapus Semua',
+  noCustomRulesForm: 'Klik "Tambah Aturan" untuk mulai membuat aturan',
+  noCustomRulesJSON: 'Klik "Tambah Aturan JSON" untuk mulai membuat aturan',
+  UASettings: 'User-Agent Kustom',
+  UAtip: 'Default: curl/7.74.0',
+  outboundNames: Object.assign({}, translations['en-US'].outboundNames, {
+    'Indonesia': '🇮🇩 Indonesia',
+    'Communication': '📞 Komunikasi',
+    'Streaming ID': '🍿 Streaming Indonesia',
+    'E-commerce': '🛒 E-commerce'
+  })
+});
 
 // 当前语言
 let currentLang = 'zh-CN';
@@ -429,6 +488,8 @@ export function setLanguage(lang) {
     currentLang = lang;
   } else if(checkStartsWith(lang, 'en')) {
     currentLang = 'en-US';
+  } else if(checkStartsWith(lang, 'id')) {
+    currentLang = 'id-ID';
   } else if(checkStartsWith(lang, 'fa')) {
     currentLang = 'fa';
   } else if(checkStartsWith(lang, 'ru')) {
