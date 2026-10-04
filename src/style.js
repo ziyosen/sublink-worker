@@ -378,10 +378,12 @@ export const generateStyles = () => `
     box-shadow: var(--shadow-glow);
   }
   .preset-card .p-ico {
-    font-size: 17px; margin-bottom: 9px; display: grid; place-items: center;
+    margin-bottom: 9px; display: grid; place-items: center;
     width: 34px; height: 34px; border-radius: 10px;
     background: var(--surface-2); border: 1px solid var(--border);
+    color: var(--primary-2);
   }
+  .preset-card .p-ico svg { width: 18px; height: 18px; display: block; }
   .preset-card.active .p-ico { background: var(--surface-3); border-color: rgba(99,102,241,0.35); }
   .preset-card b { display: block; font-size: 13.5px; margin-bottom: 3px; }
   .preset-card small { color: var(--text-3); font-size: 11.5px; line-height: 1.45; display: block; }
@@ -417,7 +419,9 @@ export const generateStyles = () => `
   }
   .rule-card:hover { border-color: var(--border-strong); background: var(--surface-2); transform: translateY(-1px); }
   .rule-card.checked { border-color: var(--primary); background: var(--primary-soft); }
-  .rule-card .r-ico { font-size: 15px; line-height: 1.2; flex: none; margin-top: 1px; }
+  .rule-card .r-ico { width: 20px; height: 20px; flex: none; margin-top: 1px; color: var(--text-2); transition: color 0.18s var(--ease); }
+  .rule-card .r-ico svg { width: 20px; height: 20px; display: block; }
+  .rule-card.checked .r-ico { color: var(--primary-2); }
   .rule-card .r-body { min-width: 0; }
   .rule-card .r-name { font-size: 13px; font-weight: 600; display: block; }
   .rule-card .r-desc { font-size: 11px; color: var(--text-3); line-height: 1.35; display: block; margin-top: 2px; }
@@ -435,20 +439,47 @@ export const generateStyles = () => `
   /* ------------------------------------------------------------------ */
   /* Custom rules                                                        */
   /* ------------------------------------------------------------------ */
-  .custom-rules-section-header {
-    display: flex; align-items: center; gap: 9px; margin: 22px 0 14px;
-    padding-top: 18px; border-top: 1px solid var(--border);
+  .custom-rules-panel {
+    margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border);
   }
-  .custom-rules-section-title {
-    font-size: 12.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
-    color: var(--text-2); margin: 0;
+  .custom-rules-section-header { display: flex; align-items: center; gap: 10px; }
+  .custom-rules-toggle {
+    flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px; border-radius: var(--radius-sm);
+    border: 1px solid var(--border); background: var(--surface);
+    cursor: pointer; text-align: left; color: var(--text);
+    transition: all 0.22s var(--ease); font-family: inherit;
   }
+  .custom-rules-toggle:hover { border-color: var(--border-strong); background: var(--surface-2); }
+  .custom-rules-panel.open .custom-rules-toggle { border-color: rgba(99,102,241,0.4); background: var(--primary-soft); }
+  .crt-ico {
+    width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center;
+    background: var(--grad-soft); color: var(--primary-2);
+    border: 1px solid rgba(99,102,241,0.25); flex: none;
+  }
+  .crt-ico svg { width: 17px; height: 17px; display: block; }
+  .crt-text { min-width: 0; }
+  .crt-text b { display: block; font-size: 13.5px; }
+  .crt-text small { display: block; color: var(--text-3); font-size: 11.5px; margin-top: 1px; }
+  .crt-badge {
+    margin-left: auto; flex: none; min-width: 24px; height: 24px; padding: 0 8px;
+    display: grid; place-items: center; border-radius: 999px; font-size: 11.5px; font-weight: 700;
+    color: var(--text-3); background: var(--surface-2); border: 1px solid var(--border);
+  }
+  .crt-badge.has-rules { color: #fff; background: var(--primary); border-color: var(--primary); }
+  .crt-chevron { color: var(--text-3); font-size: 12px; flex: none; transition: transform 0.25s var(--ease); }
+  .custom-rules-panel.open .crt-chevron { transform: rotate(180deg); }
   .custom-rules-container {
     border: 1px solid var(--border); border-radius: var(--radius-sm);
     background: var(--surface); overflow: hidden;
+    max-height: 0; opacity: 0; transform: translateY(-8px);
+    transition: max-height 0.4s var(--ease), opacity 0.3s var(--ease), transform 0.3s var(--ease), margin-top 0.3s var(--ease);
+  }
+  .custom-rules-panel.open .custom-rules-container {
+    max-height: 1400px; opacity: 1; transform: translateY(0); margin-top: 12px;
   }
   #customRules, #customRulesJSON {
-    max-height: 560px; overflow-y: auto; overflow-x: hidden;
+    max-height: 320px; overflow-y: auto; overflow-x: hidden;
     padding: 14px; background: transparent;
   }
   #customRules:empty, #customRulesJSON:empty { padding: 0; }
@@ -492,6 +523,13 @@ export const generateStyles = () => `
   @keyframes slideOut { to { opacity: 0; transform: translateY(-12px); } }
 
   .custom-rule h6, .custom-rule-json h6 { color: var(--text); font-weight: 700; font-size: 13.5px; margin: 0; }
+  /* Compact 2-up field grid so custom rules stay short instead of stacking tall */
+  .custom-rule .row {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px; margin: 0;
+  }
+  .custom-rule .row > [class*="col-"] { width: auto; max-width: none; padding: 0; flex: none; margin: 0 !important; }
+  .custom-rule .form-label { margin-bottom: 5px; }
   .custom-rule .form-label, .custom-rule-json .form-label { color: var(--text-2); }
   .custom-rule .form-control, .custom-rule-json .form-control { background: var(--surface); }
 
@@ -674,7 +712,9 @@ export const generateStyles = () => `
 
   @media (max-width: 600px) {
     .hero { padding: 18px 4px 22px; }
-    .rule-grid { grid-template-columns: 1fr; }
+    .rule-grid { grid-template-columns: 1fr; gap: 7px; }
+    .rule-card { padding: 10px 11px; }
+    .rule-card .r-desc { font-size: 10.5px; }
     .preset-grid { grid-template-columns: repeat(2, 1fr); }
     .topbar { padding: 10px 2px; }
     .step .step-label { display: none; }
