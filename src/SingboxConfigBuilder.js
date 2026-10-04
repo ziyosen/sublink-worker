@@ -1,4 +1,4 @@
-import { SING_BOX_CONFIG, generateRuleSets, generateRules, getOutbounds, PREDEFINED_RULE_SETS} from './config.js';
+import { SING_BOX_CONFIG, generateRuleSets, generateRules, getOutbounds, PREDEFINED_RULE_SETS, isDirectRule } from './config.js';
 import { BaseConfigBuilder } from './BaseConfigBuilder.js';
 import { DeepCopy } from './utils.js';
 import { t } from './i18n/index.js';
@@ -72,10 +72,13 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
     addOutboundGroups(outbounds, proxyList) {
         outbounds.forEach(outbound => {
             if (outbound !== t('outboundNames.Node Select')) {
+                const defaults = isDirectRule(outbound)
+                    ? ['DIRECT', t('outboundNames.Node Select'), ...proxyList.filter(p => p !== 'DIRECT')]
+                    : [t('outboundNames.Node Select'), ...proxyList];
                 this.config.outbounds.push({
                     type: "selector",
                     tag: t(`outboundNames.${outbound}`),
-                    outbounds: [t('outboundNames.Node Select'), ...proxyList]
+                    outbounds: defaults
                 });
             }
         });
