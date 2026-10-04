@@ -1,6 +1,89 @@
 import { UNIFIED_RULES, PREDEFINED_RULE_SETS } from './config.js';
 import { generateStyles } from './style.js';
-import { t } from './i18n/index.js';
+import { t, getCurrentLang } from './i18n/index.js';
+
+// Icon + short description for every rule group, so the picker reads like a
+// product instead of a wall of checkboxes.
+const RULE_META = {
+  'Ad Block':       { icon: '\uD83D\uDED1', id: 'Blokir iklan & tracker', en: 'Block ads & trackers' },
+  'AI Services':    { icon: '\uD83E\uDD16', id: 'ChatGPT, Gemini, Claude, dll', en: 'ChatGPT, Gemini, Claude, etc.' },
+  'Bilibili':       { icon: '\uD83D\uDCFA', id: 'Bilibili & video CN', en: 'Bilibili & CN video' },
+  'Youtube':        { icon: '\u25B6\uFE0F', id: 'YouTube & video', en: 'YouTube & video' },
+  'Google':         { icon: '\uD83D\uDD0D', id: 'Google, Gmail, Drive', en: 'Google, Gmail, Drive' },
+  'Private':        { icon: '\uD83C\uDFE0', id: 'Jaringan lokal / LAN', en: 'Local network / LAN' },
+  'Indonesia':      { icon: '\uD83C\uDDEE\uD83C\uDDE9', id: 'Situs & IP Indonesia (langsung)', en: 'Indonesian sites & IPs (direct)' },
+  'Location:CN':    { icon: '\uD83C\uDDE8\uD83C\uDDF3', id: 'Layanan Tiongkok', en: 'China services' },
+  'Telegram':       { icon: '\u2708\uFE0F', id: 'Telegram', en: 'Telegram' },
+  'Github':         { icon: '\uD83D\uDC19', id: 'GitHub & GitLab', en: 'GitHub & GitLab' },
+  'Microsoft':      { icon: '\uD83E\uDE9F', id: 'Microsoft & Office', en: 'Microsoft & Office' },
+  'Apple':          { icon: '\uD83C\uDF4E', id: 'Apple, iCloud, App Store', en: 'Apple, iCloud, App Store' },
+  'Social Media':   { icon: '\uD83D\uDCAC', id: 'IG, FB, X, TikTok', en: 'IG, FB, X, TikTok' },
+  'Communication':  { icon: '\uD83D\uDCDE', id: 'WhatsApp, LINE, Discord', en: 'WhatsApp, LINE, Discord' },
+  'Streaming':      { icon: '\uD83C\uDFAC', id: 'Netflix, Disney+, HBO, Spotify', en: 'Netflix, Disney+, HBO, Spotify' },
+  'Streaming ID':   { icon: '\uD83C\uDF7F', id: 'Vidio, Viu, WeTV, iQIYI', en: 'Vidio, Viu, WeTV, iQIYI' },
+  'Gaming':         { icon: '\uD83C\uDFAE', id: 'Steam, Epic, game mobile', en: 'Steam, Epic, mobile games' },
+  'E-commerce':     { icon: '\uD83D\uDED2', id: 'Shopee, Tokopedia, Lazada', en: 'Shopee, Tokopedia, Lazada' },
+  'Education':      { icon: '\uD83C\uDF93', id: 'Coursera, Udemy, kampus', en: 'Coursera, Udemy, campus' },
+  'Financial':      { icon: '\uD83D\uDCB3', id: 'PayPal, kartu, fintech', en: 'PayPal, cards, fintech' },
+  'Cloud Services': { icon: '\u2601\uFE0F', id: 'AWS, Azure, Cloudflare', en: 'AWS, Azure, Cloudflare' },
+  'Non-China':      { icon: '\uD83C\uDF10', id: 'Semua situs luar negeri', en: 'All foreign sites' }
+};
+
+// Decorative UI copy (self-contained, falls back to English).
+const UI_TEXT = {
+  stepPaste:        { en: 'Paste nodes', id: 'Tempel node' },
+  stepConfigure:    { en: 'Configure', id: 'Atur' },
+  stepGetLinks:     { en: 'Get links', id: 'Ambil link' },
+  copyAll:          { en: 'Copy all', id: 'Salin semua' },
+  linkCopied:       { en: 'Link copied', id: 'Link disalin' },
+  copyAllDone:      { en: 'All links copied', id: 'Semua link disalin' },
+  copyFailed:       { en: 'Copy failed', id: 'Gagal menyalin' },
+  noLink:           { en: 'No link yet', id: 'Belum ada link' },
+  alreadyShortened: { en: 'Links are already shortened', id: 'Link sudah dipendekkan' },
+  shortenFailed:    { en: 'Failed to shorten links', id: 'Gagal memendekkan link' },
+  brandTagline:        { en: 'Serverless subscription converter', id: 'Konverter langganan tanpa server', zh: '\u65E0\u670D\u52A1\u5668\u8BA2\u9605\u8F6C\u6362\u5DE5\u5177' },
+  toggleTheme:         { en: 'Toggle theme', id: 'Ganti tema', zh: '\u5207\u6362\u4E3B\u9898' },
+  heroBadge:           { en: 'Online \u00B7 Cloudflare Workers', id: 'Online \u00B7 Cloudflare Workers', zh: '\u5728\u7EBF \u00B7 Cloudflare Workers' },
+  heroTitle1:          { en: 'Convert any subscription into', id: 'Ubah langganan apa pun jadi', zh: '\u628A\u4EFB\u610F\u8BA2\u9605\u8F6C\u6362\u4E3A' },
+  heroTitle2:          { en: 'one clean link', id: 'satu link rapi', zh: '\u4E00\u6761\u5E72\u51C0\u94FE\u63A5' },
+  heroSubtitle:        { en: 'Paste your nodes, pick a routing preset, and get ready-to-use links for Sing-Box, Clash, Xray and Surge in seconds.', id: 'Tempel node kamu, pilih preset routing, lalu dapatkan link siap pakai untuk Sing-Box, Clash, Xray, dan Surge dalam hitungan detik.', zh: '\u7C98\u8D34\u8282\u70B9\uFF0C\u9009\u62E9\u8DEF\u7531\u9884\u8BBE\uFF0C\u51E0\u79D2\u5185\u83B7\u5F97 Sing-Box\u3001Clash\u3001Xray \u548C Surge \u94FE\u63A5\u3002' },
+  chipProtocols:       { en: '6 protocols', id: '6 protokol', zh: '6 \u79CD\u534F\u8BAE' },
+  chipRules:           { en: 'Smart routing', id: 'Routing pintar', zh: '\u667A\u80FD\u5206\u6D41' },
+  chipServerless:      { en: 'Serverless', id: 'Tanpa server', zh: '\u65E0\u670D\u52A1\u5668' },
+  chipQr:              { en: 'QR & short links', id: 'QR & link pendek', zh: '\u4E8C\u7EF4\u7801\u548C\u77ED\u94FE' },
+  footerNote:          { en: 'Built for speed and privacy', id: 'Dibuat untuk cepat & privat', zh: '\u4E3A\u901F\u5EA6\u4E0E\u9690\u79C1\u800C\u751F' },
+  pasteHint:           { en: 'One link per line', id: 'Satu link per baris', zh: '\u6BCF\u884C\u4E00\u4E2A\u94FE\u63A5' },
+  lines:               { en: 'lines', id: 'baris', zh: '\u884C' },
+  advancedOptionsHint: { en: 'Routing rules, custom config, User-Agent', id: 'Aturan routing, config kustom, User-Agent', zh: '\u8DEF\u7531\u89C4\u5219\u3001\u81EA\u5B9A\u4E49\u914D\u7F6E\u3001User-Agent' },
+  ruleSelectionHint:   { en: 'Pick a ready-made preset, or fine-tune each category. Local traffic stays direct; foreign traffic uses your nodes.', id: 'Pilih preset siap pakai, atau atur tiap kategori. Trafik lokal langsung; trafik luar negeri lewat node kamu.', zh: '\u9009\u62E9\u73B0\u6210\u9884\u8BBE\uFF0C\u6216\u9010\u9879\u5FAE\u8C03\u3002' },
+  presetIndonesia:     { en: 'Indonesia', id: 'Indonesia', zh: '\u5370\u5EA6\u5C3C\u897F\u4E9A' },
+  presetIndonesiaDesc: { en: 'Local direct \u00B7 streaming \u00B7 gaming', id: 'Lokal langsung \u00B7 streaming \u00B7 game', zh: '\u672C\u5730\u76F4\u8FDE \u00B7 \u6D41\u5A92\u4F53 \u00B7 \u6E38\u620F' },
+  presetBalancedDesc:  { en: 'Daily driver, moderate rules', id: 'Sehari-hari, aturan sedang', zh: '\u65E5\u5E38\u4F7F\u7528' },
+  presetMinimalDesc:   { en: 'Lightest, fastest to load', id: 'Paling ringan & cepat', zh: '\u6700\u8F7B\u91CF' },
+  presetComprehensiveDesc: { en: 'Every category enabled', id: 'Semua kategori aktif', zh: '\u5168\u90E8\u542F\u7528' },
+  presetCustomDesc:    { en: 'Choose categories manually', id: 'Pilih kategori manual', zh: '\u624B\u52A8\u9009\u62E9' },
+  searchRules:         { en: 'Search rules\u2026', id: 'Cari aturan\u2026', zh: '\u641C\u7D22\u89C4\u5219\u2026' },
+  selected:            { en: 'selected', id: 'dipilih', zh: '\u5DF2\u9009' },
+  selectAll:           { en: 'All', id: 'Semua', zh: '\u5168\u9009' },
+  selectNone:          { en: 'None', id: 'Kosong', zh: '\u6E05\u7A7A' },
+  resultTitle:         { en: 'Your links are ready', id: 'Link kamu sudah siap', zh: '\u94FE\u63A5\u5DF2\u751F\u6210' },
+  resultSubtitle:      { en: 'Copy, scan, or shorten \u2014 pick your client.', id: 'Salin, scan, atau pendekkan \u2014 pilih klienmu.', zh: '\u590D\u5236\u3001\u626B\u7801\u6216\u7F29\u77ED\u3002' },
+  copy:                { en: 'Copy', id: 'Salin', zh: '\u590D\u5236' }
+};
+
+const ui = (key) => {
+  const e = UI_TEXT[key] || {};
+  const l = String(getCurrentLang() || 'en');
+  if (l.startsWith('id')) return e.id || e.en || key;
+  if (l.startsWith('zh')) return e.zh || e.en || key;
+  return e.en || key;
+};
+
+const ruleMeta = (name) => RULE_META[name] || { icon: '\uD83D\uDD17', id: '', en: '' };
+const ruleDesc = (name) => {
+  const m = ruleMeta(name);
+  return String(getCurrentLang() || 'en').startsWith('id') ? m.id : m.en;
+};
 
 export function generateHtml(xrayUrl, singboxUrl, clashUrl, surgeUrl, baseUrl) {
   return `
@@ -18,11 +101,15 @@ const generateHead = () => `
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="${t('pageDescription')}">
     <meta name="keywords" content="${t('pageKeywords')}">
+    <meta name="theme-color" content="#07080c">
     <title>${t('pageTitle')}</title>
     <meta property="og:title" content="${t('ogTitle')}">
     <meta property="og:description" content="${t('ogDescription')}">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://sublink-worker.sageer.me/">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
@@ -33,12 +120,18 @@ const generateHead = () => `
 `;
 
 const generateBody = (xrayUrl, singboxUrl, clashUrl, surgeUrl, baseUrl) => `
-  <body>
-    ${generateDarkModeToggle()}
-    ${generateGithubLink()}
-    <div class="container mt-5">
-      <div class="card mb-5">
-        ${generateCardHeader()}
+  <body data-theme="dark">
+    <div class="bg-layer">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+      <div class="bg-grid"></div>
+    </div>
+    <div class="container">
+      ${generateTopbar()}
+      ${generateHero()}
+      ${generateStepper()}
+      <div class="card">
         <div class="card-body">
           ${generateForm()}
           <div id="subscribeLinksContainer">
@@ -46,26 +139,64 @@ const generateBody = (xrayUrl, singboxUrl, clashUrl, surgeUrl, baseUrl) => `
           </div>
         </div>
       </div>
+      ${generateFooter()}
     </div>
+    <div class="toast-host" id="toastHost"></div>
     ${generateScripts()}
   </body>
 `;
 
-const generateDarkModeToggle = () => `
-  <button id="darkModeToggle" class="btn btn-outline-secondary">
-    <i class="fas fa-moon"></i>
-  </button>
+const generateTopbar = () => `
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-logo"><i class="fas fa-bolt"></i></div>
+      <div class="brand-text">
+        <b>Sublink Worker</b>
+        <span>${ui('brandTagline')}</span>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <a href="https://t.me/Bleszh" target="_blank" rel="noopener noreferrer" class="icon-btn" title="Telegram">
+        <i class="fab fa-telegram"></i>
+      </a>
+      <button id="darkModeToggle" class="icon-btn" title="${ui('toggleTheme')}">
+        <i class="fas fa-moon"></i>
+      </button>
+    </div>
+  </div>
 `;
 
-const generateGithubLink = () => `
-  <a href="https://t.me/Bleszh" target="_blank" rel="noopener noreferrer" class="telegram-link">
-    <i class="fab fa-telegram"></i>
-  </a>
+const generateHero = () => `
+  <div class="hero">
+    <div class="hero-badge"><span class="dot"></span>${ui('heroBadge')}</div>
+    <h1>${ui('heroTitle1')} <span class="grad">${ui('heroTitle2')}</span></h1>
+    <p>${ui('heroSubtitle')}</p>
+    <div class="hero-chips">
+      <span class="chip"><i class="fas fa-globe"></i>${ui('chipProtocols')}</span>
+      <span class="chip"><i class="fas fa-shield-halved"></i>${ui('chipRules')}</span>
+      <span class="chip"><i class="fas fa-bolt"></i>${ui('chipServerless')}</span>
+      <span class="chip"><i class="fas fa-qrcode"></i>${ui('chipQr')}</span>
+    </div>
+  </div>
 `;
 
-const generateCardHeader = () => `
-  <div class="card-header text-center">
-    <h1 class="display-4 mb-0">Generate Link</h1>
+const generateStepper = () => `
+  <div class="stepper" id="stepper">
+    <div class="step active" data-step="1"><span class="step-num">1</span><span class="step-label">${ui('stepPaste')}</span></div>
+    <span class="step-line"></span>
+    <div class="step" data-step="2"><span class="step-num">2</span><span class="step-label">${ui('stepConfigure')}</span></div>
+    <span class="step-line"></span>
+    <div class="step" data-step="3"><span class="step-num">3</span><span class="step-label">${ui('stepGetLinks')}</span></div>
+  </div>
+`;
+
+const generateFooter = () => `
+  <div class="footer-note">
+    <span>${ui('footerNote')}</span>
+    <span class="sep">&middot;</span>
+    <a href="https://github.com/ziyosen/sublink-worker" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i> sublink-worker</a>
+    <span class="sep">&middot;</span>
+    <a href="https://t.me/Bleszh" target="_blank" rel="noopener noreferrer"><i class="fab fa-telegram"></i> Telegram</a>
   </div>
 `;
 
@@ -81,16 +212,32 @@ const generateForm = () => `
 
 const generateShareUrlsSection = () => `
   <div class="form-section">
-    <div class="form-section-title">${t('shareUrls')}</div>
-    <textarea class="form-control" id="inputTextarea" name="input" required placeholder="${t('urlPlaceholder')}" rows="3"></textarea>
+    <div class="form-section-title">
+      <span class="sec-ico"><i class="fas fa-link"></i></span>
+      ${t('shareUrls')}
+    </div>
+    <textarea class="form-control" id="inputTextarea" name="input" required placeholder="${t('urlPlaceholder')}" rows="4" oninput="updateInputCounter()"></textarea>
+    <div class="char-counter">
+      <span>${ui('pasteHint')}</span>
+      <span id="inputCounter"><b>0</b> ${ui('lines')}</span>
+    </div>
   </div>
 `;
 
 const generateAdvancedOptionsToggle = () => `
-  <div class="form-check form-switch mb-3">
-    <input class="form-check-input" type="checkbox" id="advancedToggle">
-    <label class="form-check-label" for="advancedToggle">${t('advancedOptions')}</label>
-  </div>
+  <label class="adv-toggle" for="advancedToggle">
+    <span class="adv-toggle-left">
+      <span class="ico"><i class="fas fa-sliders"></i></span>
+      <span>
+        <b>${t('advancedOptions')}</b>
+        <small>${ui('advancedOptionsHint')}</small>
+      </span>
+    </span>
+    <span class="switch">
+      <input type="checkbox" id="advancedToggle">
+      <span class="track"></span>
+    </span>
+  </label>
 `;
 
 const generateAdvancedOptions = () => `
@@ -102,37 +249,55 @@ const generateAdvancedOptions = () => `
 `;
 
 const generateButtonContainer = () => `
-  <div class="button-container d-flex gap-2 mt-4">
-    <button type="submit" class="btn btn-primary flex-grow-1">
-      <i class="fas fa-sync-alt me-2"></i>${t('convert')}
+  <div class="action-bar">
+    <button type="submit" class="btn btn-primary">
+      <i class="fas fa-wand-magic-sparkles me-2"></i>${t('convert')}
     </button>
-    <button type="button" class="btn btn-outline-secondary" id="clearFormBtn">
-      <i class="fas fa-trash-alt me-2"></i>${t('clear')}
+    <button type="button" class="btn btn-outline-secondary btn-clear" id="clearFormBtn">
+      <i class="fas fa-trash-alt"></i>
     </button>
   </div>
 `;
 
 const generateSubscribeLinks = (xrayUrl, singboxUrl, clashUrl, surgeUrl, baseUrl) => `
-  <div class="mt-4">
-    ${generateLinkInput('Xray Link (Base64):', 'xrayLink', xrayUrl)}
-    ${generateLinkInput('SingBox Link:', 'singboxLink', singboxUrl)}
-    ${generateLinkInput('Clash Link:', 'clashLink', clashUrl)}
-    ${generateLinkInput('Surge Link:', 'surgeLink', surgeUrl)}
+  <div class="result-panel">
+    <div class="result-head">
+      <span class="ico"><i class="fas fa-circle-check"></i></span>
+      <span>
+        <b>${ui('resultTitle')}</b>
+        <small>${ui('resultSubtitle')}</small>
+      </span>
+      <span class="result-toolbar">
+        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="copyAllLinks()" title="${ui('copyAll')}">
+          <i class="fas fa-copy me-1"></i>${ui('copyAll')}
+        </button>
+      </span>
+    </div>
+    ${generateLinkInput('Xray', 'xrayLink', xrayUrl, 'fa-cube', 'xray')}
+    ${generateLinkInput('Sing-Box', 'singboxLink', singboxUrl, 'fa-star', 'singbox')}
+    ${generateLinkInput('Clash', 'clashLink', clashUrl, 'fa-layer-group', 'clash')}
+    ${generateLinkInput('Surge', 'surgeLink', surgeUrl, 'fa-bolt', 'surge')}
     ${generateCustomPathSection(baseUrl)}
     ${generateShortenButton()}
   </div>
 `;
 
-const generateLinkInput = (label, id, value) => `
-  <div class="mb-4">
-    <label for="${id}" class="form-label">${label}</label>
+const generateLinkInput = (label, id, value, icon, proto) => `
+  <div class="link-card" data-proto="${proto}">
+    <div class="lc-top">
+      <span class="lc-label">
+        <span class="badge-dot"></span>
+        <i class="fas ${icon}"></i>
+        ${label}
+      </span>
+      <span class="protocol-badge">${proto === 'singbox' ? 'sing-box' : proto}</span>
+    </div>
     <div class="input-group">
-      <span class="input-group-text"><i class="fas fa-link"></i></span>
       <input type="text" class="form-control" id="${id}" value="${value}" readonly>
-      <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard('${id}')">
+      <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard('${id}')" title="${ui('copy')}">
         <i class="fas fa-copy"></i>
       </button>
-      <button class="btn btn-outline-secondary" type="button" onclick="generateQRCode('${id}')">
+      <button class="btn btn-outline-secondary" type="button" onclick="generateQRCode('${id}')" title="QR">
         <i class="fas fa-qrcode"></i>
       </button>
     </div>
@@ -245,21 +410,72 @@ const advancedOptionsToggleFunction = () => `
 `;
 
 const copyToClipboardFunction = () => `
+  function showToast(message, isError) {
+    const host = document.getElementById('toastHost');
+    if (!host) { return; }
+    const toast = document.createElement('div');
+    toast.className = 'toast' + (isError ? ' error' : '');
+    toast.innerHTML = '<i class="fas ' + (isError ? 'fa-circle-exclamation' : 'fa-circle-check') + '"></i><span></span>';
+    toast.querySelector('span').textContent = message;
+    host.appendChild(toast);
+    setTimeout(() => {
+      toast.classList.add('out');
+      toast.addEventListener('animationend', () => toast.remove(), { once: true });
+    }, 2400);
+  }
+
+  function setStepper(active) {
+    document.querySelectorAll('.stepper .step').forEach(s => {
+      const n = parseInt(s.dataset.step, 10);
+      s.classList.toggle('active', n === active);
+      s.classList.toggle('done', n < active);
+    });
+  }
+
+  async function copyText(text) {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   function copyToClipboard(elementId) {
     const element = document.getElementById(elementId);
-    element.select();
-    document.execCommand('copy');
-    
-    const button = element.nextElementSibling;
-    const originalText = button.innerHTML;
-    button.innerHTML = '<i class="fas fa-check"></i> Copied!';
-    button.classList.remove('btn-outline-secondary');
-    button.classList.add('btn-success');
-    setTimeout(() => {
-      button.innerHTML = originalText;
-      button.classList.remove('btn-success');
-      button.classList.add('btn-outline-secondary');
-    }, 2000);
+    if (!element || !element.value) { showToast(${JSON.stringify(ui('noLink'))}, true); return; }
+    copyText(element.value).then(ok => {
+      if (!ok) { showToast(${JSON.stringify(ui('copyFailed'))}, true); return; }
+      const button = element.nextElementSibling;
+      const originalText = button.innerHTML;
+      button.innerHTML = '<i class="fas fa-check"></i>';
+      button.classList.remove('btn-outline-secondary');
+      button.classList.add('btn-success');
+      showToast(${JSON.stringify(ui('linkCopied'))}, false);
+      setTimeout(() => {
+        button.innerHTML = originalText;
+        button.classList.remove('btn-success');
+        button.classList.add('btn-outline-secondary');
+      }, 1800);
+    });
+  }
+
+  function copyAllLinks() {
+    const ids = ['xrayLink', 'singboxLink', 'clashLink', 'surgeLink'];
+    const text = ids.map(id => document.getElementById(id).value).filter(Boolean).join('\\n');
+    if (!text) { showToast(${JSON.stringify(ui('noLink'))}, true); return; }
+    copyText(text).then(ok => showToast(ok ? ${JSON.stringify(ui('copyAllDone'))} : ${JSON.stringify(ui('copyFailed'))}, !ok));
   }
 `;
 
@@ -292,7 +508,7 @@ const shortenAllUrlsFunction = () => `
       const customShortCode = document.getElementById('customShortCode').value;
 
       if (singboxLink.value.includes('/b/')) {
-        alert('Links are already shortened!');
+        showToast(${JSON.stringify(ui('alreadyShortened'))}, true);
         return;
       }
 
@@ -308,7 +524,7 @@ const shortenAllUrlsFunction = () => `
       surgeLink.value = window.location.origin + '/s/' + shortCode;
     } catch (error) {
       console.error('Error:', error);
-      alert('Failed to shorten URLs. Please try again.');
+      showToast(${JSON.stringify(ui('shortenFailed'))}, true);
     } finally {
       isShortening = false;
       shortenButton.disabled = false;
@@ -352,38 +568,71 @@ const darkModeToggleFunction = () => `
 
 const generateRuleSetSelection = () => `
   <div class="form-section">
-    <div class="form-section-title d-flex align-items-center">
+    <div class="form-section-title">
+      <span class="sec-ico"><i class="fas fa-shield-halved"></i></span>
       ${t('ruleSelection')}
-      <span class="tooltip-icon ms-2">
-        <i class="fas fa-question-circle"></i>
-        <span class="tooltip-content">
-          ${t('ruleSelectionTooltip')}
-        </span>
+      <span class="tooltip-icon"><i class="fas fa-question"></i>
+        <span class="tooltip-content">${t('ruleSelectionTooltip')}</span>
       </span>
     </div>
-    <div class="content-container mb-3">
-      <select class="form-select" id="predefinedRules" onchange="applyPredefinedRules()">
-        <option value="custom">${t('custom')}</option>
-        <option value="minimal">${t('minimal')}</option>
-        <option value="balanced">${t('balanced')}</option>
-        <option value="comprehensive">${t('comprehensive')}</option>
-      </select>
+    <p class="section-hint">${ui('ruleSelectionHint')}</p>
+
+    <!-- Hidden select kept for backwards-compatible form submission -->
+    <select class="hidden" id="predefinedRules">
+      <option value="custom">${t('custom')}</option>
+      <option value="indonesia">${ui('presetIndonesia')}</option>
+      <option value="minimal">${t('minimal')}</option>
+      <option value="balanced">${t('balanced')}</option>
+      <option value="comprehensive">${t('comprehensive')}</option>
+    </select>
+
+    <div class="preset-grid" id="presetGrid">
+      ${generatePresetCard('indonesia', '\uD83C\uDDEE\uD83C\uDDE9', ui('presetIndonesia'), ui('presetIndonesiaDesc'))}
+      ${generatePresetCard('balanced', '\u2696\uFE0F', t('balanced'), ui('presetBalancedDesc'))}
+      ${generatePresetCard('minimal', '\uD83E\uDEB6', t('minimal'), ui('presetMinimalDesc'))}
+      ${generatePresetCard('comprehensive', '\uD83E\uDDF0', t('comprehensive'), ui('presetComprehensiveDesc'))}
+      ${generatePresetCard('custom', '\uD83D\uDEE0\uFE0F', t('custom'), ui('presetCustomDesc'))}
     </div>
-    <div class="row" id="ruleCheckboxes">
+
+    <div class="rule-toolbar">
+      <div class="rule-search">
+        <i class="fas fa-magnifying-glass"></i>
+        <input type="text" class="form-control" id="ruleSearch" placeholder="${ui('searchRules')}" oninput="filterRuleCards(this.value)">
+      </div>
+      <span class="rule-count"><b id="ruleCount">0</b> ${ui('selected')}</span>
+      <button type="button" class="btn btn-outline-secondary btn-sm" onclick="selectAllRules(true)">${ui('selectAll')}</button>
+      <button type="button" class="btn btn-outline-secondary btn-sm" onclick="selectAllRules(false)">${ui('selectNone')}</button>
+    </div>
+
+    <div class="rule-grid" id="ruleCheckboxes">
       ${UNIFIED_RULES.map(rule => generateRuleCheckbox(rule)).join('')}
     </div>
     ${generateCustomRulesSection()}
   </div>
 `;
 
-const generateRuleCheckbox = (rule) => `
-  <div class="col-md-4 mb-2">
-    <div class="form-check">
-      <input class="form-check-input rule-checkbox" type="checkbox" value="${rule.name}" id="${rule.name}" name="selectedRules">
-      <label class="form-check-label" for="${rule.name}">${t('outboundNames.' + rule.name)}</label>
-    </div>
-  </div>
+const generatePresetCard = (value, icon, name, desc) => `
+  <button type="button" class="preset-card" data-preset="${value}" onclick="applyPredefinedRules('${value}')">
+    <span class="p-check"><i class="fas fa-check"></i></span>
+    <span class="p-ico">${icon}</span>
+    <b>${name}</b>
+    <small>${desc}</small>
+  </button>
 `;
+
+const generateRuleCheckbox = (rule) => {
+  const meta = ruleMeta(rule.name);
+  return `
+  <label class="rule-card" for="${rule.name}">
+    <input class="rule-checkbox" type="checkbox" value="${rule.name}" id="${rule.name}" name="selectedRules">
+    <span class="r-ico">${meta.icon}</span>
+    <span class="r-body">
+      <span class="r-name">${t('outboundNames.' + rule.name)}</span>
+      <span class="r-desc">${ruleDesc(rule.name)}</span>
+    </span>
+    <span class="r-check"><i class="fas fa-check"></i></span>
+  </label>`;
+};
 
 const generateCustomRulesSection = () => `
   <div class="mt-2">
@@ -506,58 +755,93 @@ const generateUASection = () => `
 `;
 
 const applyPredefinedRulesFunction = () => `
-  function applyPredefinedRules() {
-    const predefinedRules = document.getElementById('predefinedRules').value;
-    const checkboxes = document.querySelectorAll('.rule-checkbox');
-    
-    checkboxes.forEach(checkbox => {
-      checkbox.checked = false;
+  const PRESET_RULES = ${JSON.stringify(PREDEFINED_RULE_SETS)};
+
+  function syncRuleCards() {
+    let count = 0;
+    document.querySelectorAll('.rule-card').forEach(card => {
+      const cb = card.querySelector('.rule-checkbox');
+      if (!cb) return;
+      card.classList.toggle('checked', cb.checked);
+      if (cb.checked) count++;
     });
+    const counter = document.getElementById('ruleCount');
+    if (counter) counter.textContent = count;
+  }
 
-    if (predefinedRules === 'custom') {
-      return;
-    }
-
-    const rulesToApply = ${JSON.stringify(PREDEFINED_RULE_SETS)};
-    
-    rulesToApply[predefinedRules].forEach(rule => {
-      const checkbox = document.getElementById(rule);
-      if (checkbox) {
-        checkbox.checked = true;
-      }
+  function setActivePreset(value) {
+    document.querySelectorAll('.preset-card').forEach(card => {
+      card.classList.toggle('active', card.dataset.preset === value);
     });
   }
 
-  // Add event listeners to checkboxes
+  function setPresetValue(value) {
+    const select = document.getElementById('predefinedRules');
+    if (select) select.value = value;
+    setActivePreset(value);
+  }
+
+  function applyPredefinedRules(value) {
+    const select = document.getElementById('predefinedRules');
+    if (value === undefined) value = select ? select.value : 'custom';
+    setPresetValue(value);
+
+    if (value === 'custom') { syncRuleCards(); return; }
+
+    const rules = PRESET_RULES[value] || [];
+    document.querySelectorAll('.rule-checkbox').forEach(cb => {
+      cb.checked = rules.includes(cb.value);
+    });
+    syncRuleCards();
+  }
+
+  function selectAllRules(state) {
+    document.querySelectorAll('.rule-checkbox').forEach(cb => { cb.checked = !!state; });
+    setPresetValue('custom');
+    syncRuleCards();
+  }
+
+  function filterRuleCards(query) {
+    const q = (query || '').trim().toLowerCase();
+    document.querySelectorAll('.rule-card').forEach(card => {
+      const text = (card.textContent || '').toLowerCase();
+      card.classList.toggle('hidden-by-search', q !== '' && !text.includes(q));
+    });
+  }
+
+  function updateInputCounter() {
+    const el = document.getElementById('inputTextarea');
+    const counter = document.getElementById('inputCounter');
+    if (!el || !counter) return;
+    const lines = el.value.split('\\n').filter(l => l.trim() !== '').length;
+    counter.innerHTML = '<b>' + lines + '</b> ' + ${JSON.stringify(ui('lines'))};
+  }
+
+  // Manual edits switch the preset to custom
   document.addEventListener('DOMContentLoaded', function() {
-    const checkboxes = document.querySelectorAll('.rule-checkbox');
-    checkboxes.forEach(checkbox => {
-      checkbox.addEventListener('change', function() {
-        const predefinedSelect = document.getElementById('predefinedRules');
-        if (predefinedSelect.value !== 'custom') {
-          predefinedSelect.value = 'custom';
-        }
+    document.querySelectorAll('.rule-checkbox').forEach(cb => {
+      cb.addEventListener('change', function() {
+        setPresetValue('custom');
+        syncRuleCards();
       });
     });
+    const select = document.getElementById('predefinedRules');
+    applyPredefinedRules(select ? select.value : 'custom');
+    updateInputCounter();
   });
 `;
 
 const tooltipFunction = () => `
   function initTooltips() {
-    const tooltips = document.querySelectorAll('.tooltip-icon');
-    tooltips.forEach(tooltip => {
+    document.querySelectorAll('.tooltip-icon').forEach(tooltip => {
       tooltip.addEventListener('click', (e) => {
+        e.preventDefault();
         e.stopPropagation();
-        const content = tooltip.querySelector('.tooltip-content');
-        content.style.display = content.style.display === 'block' ? 'none' : 'block';
+        tooltip.classList.toggle('open');
       });
     });
-
     document.addEventListener('click', () => {
-      const openTooltips = document.querySelectorAll('.tooltip-content[style="display: block;"]');
-      openTooltips.forEach(tooltip => {
-        tooltip.style.display = 'none';
-      });
+      document.querySelectorAll('.tooltip-icon.open').forEach(t => t.classList.remove('open'));
     });
   }
 
@@ -612,7 +896,8 @@ const submitFormFunction = () => `
     subscribeLinksContainer.classList.remove('hide');
     subscribeLinksContainer.classList.add('show');
 
-    // Scroll to the subscribe part
+    // Advance the stepper and scroll to the subscribe part
+    setStepper(3);
     subscribeLinksContainer.scrollIntoView({ behavior: 'smooth' });
   }
 
@@ -640,7 +925,7 @@ const submitFormFunction = () => `
         try {
           const decodedRules = decodeURIComponent(selectedRules).replace(/^"|"$/g, '');
           // Check if it's a predefined rule set
-          if (['minimal', 'balanced', 'comprehensive'].includes(decodedRules)) {
+          if (['indonesia', 'minimal', 'balanced', 'comprehensive'].includes(decodedRules)) {
             const predefinedRules = document.getElementById('predefinedRules');
             predefinedRules.value = decodedRules;
             // Apply predefined rules to checkboxes
@@ -649,6 +934,8 @@ const submitFormFunction = () => `
             checkboxes.forEach(checkbox => {
               checkbox.checked = rulesToApply[decodedRules].includes(checkbox.value);
             });
+            setPresetValue(decodedRules);
+            syncRuleCards();
           } else {
             // Handle custom rules (JSON array)
             const rules = JSON.parse(decodedRules);
@@ -658,6 +945,8 @@ const submitFormFunction = () => `
               checkboxes.forEach(checkbox => {
                 checkbox.checked = rules.includes(checkbox.value);
               });
+              setPresetValue('custom');
+              syncRuleCards();
             }
           }
         } catch (e) {
@@ -1271,7 +1560,7 @@ const generateQRCodeFunction = () => `
     const input = document.getElementById(id);
     const text = input.value;
     if (!text) {
-      alert('No link provided!');
+      showToast(${JSON.stringify(ui('noLink'))}, true);
       return;
     }
     try {
@@ -1313,7 +1602,7 @@ const generateQRCodeFunction = () => `
       });
     } catch (error) {
       console.error('Error in generating:', error);
-      alert('Try to use short links!');
+      showToast(${JSON.stringify(ui('shortenFailed'))}, true);
     }
   }
 
