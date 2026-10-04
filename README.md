@@ -70,6 +70,11 @@ For detailed API documentation, please refer to [APIDoc.md](/docs/APIDoc.md)
 
 ## 📝 Recent Updates
 
+### 2026-10-04 — "Aurora Pro" UI
+
+- Full web UI redesign ("Aurora Pro"): glassmorphism dark/light theme, a 3-step progress header, protocol-accented result cards with **Copy all**, and toast notifications replacing browser alerts.
+- Added an Indonesian (`id-ID`) locale and `Indonesia` / `Private` direct-routing presets.
+
 ### 2025-05-02
 
 - Automatic renaming is now applied when proxies with the same name exist ([#175](https://github.com/7Sageer/sublink-worker/pull/175))
