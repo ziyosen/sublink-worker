@@ -1,4 +1,4 @@
-import { t } from './i18n';
+import { t } from './i18n/index.js';
 export const SITE_RULE_SET_BASE_URL = 'https://edgeone.gh-proxy.com/https://github.com/lyc8503/sing-box-rules/blob/rule-set-geosite/';
 export const IP_RULE_SET_BASE_URL = 'https://edgeone.gh-proxy.com/https://github.com/lyc8503/sing-box-rules/blob/rule-set-geoip/';
 export const CLASH_SITE_RULE_SET_BASE_URL = 'https://gh-proxy.com/https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/';
@@ -8,6 +8,8 @@ export const SURGE_IP_RULE_SET_BASEURL = 'https://gh-proxy.com/https://github.co
 // Custom rules
 export const CUSTOM_RULES = [];
 // Unified rule structure
+// `direct: true` means the generated policy group defaults to DIRECT instead of
+// the proxy — used for local/LAN traffic so it never leaves the device.
 export const UNIFIED_RULES = [
 	{
 		name: 'Ad Block',
@@ -16,9 +18,27 @@ export const UNIFIED_RULES = [
 		ip_rules: []
 	},
 	{
+		name: 'Private',
+		outbound: t('outboundNames.Private'),
+		site_rules: [],
+		ip_rules: ['private'],
+		direct: true
+	},
+	{
+		name: 'Indonesia',
+		outbound: t('outboundNames.Indonesia'),
+		site_rules: [],
+		ip_rules: ['id'],
+		domain_suffix: [
+			'.id', '.co.id', '.go.id', '.ac.id', '.or.id', '.web.id',
+			'.sch.id', '.biz.id', '.my.id', '.desa.id', '.ponpes.id'
+		],
+		direct: true
+	},
+	{
 		name: 'AI Services',
 		outbound: t('outboundNames.AI Services'),
-		site_rules: ['category-ai-!cn',],
+		site_rules: ['category-ai-!cn'],
 		ip_rules: []
 	},
 	{
@@ -36,19 +56,13 @@ export const UNIFIED_RULES = [
 	{
 		name: 'Google',
 		outbound: t('outboundNames.Google'),
-		site_rules: ['google'],
+		site_rules: ['google', 'google-gemini', 'google-play'],
 		ip_rules: ['google']
-	},
-	{
-		name: 'Private',
-		outbound: t('outboundNames.Private'),
-		site_rules: [],
-		ip_rules: ['private']
 	},
 	{
 		name: 'Location:CN',
 		outbound: t('outboundNames.Location:CN'),
-		site_rules: ['geolocation-cn','cn'],
+		site_rules: ['geolocation-cn', 'cn'],
 		ip_rules: ['cn']
 	},
 	{
@@ -78,19 +92,38 @@ export const UNIFIED_RULES = [
 	{
 		name: 'Social Media',
 		outbound: t('outboundNames.Social Media'),
-		site_rules: ['facebook', 'instagram', 'twitter', 'tiktok', 'linkedin'],
+		site_rules: ['facebook', 'instagram', 'twitter', 'tiktok', 'linkedin', 'category-social-media-!cn'],
+		ip_rules: []
+	},
+	{
+		name: 'Communication',
+		outbound: t('outboundNames.Communication'),
+		site_rules: ['whatsapp', 'line', 'kakao', 'discord', 'category-communication'],
 		ip_rules: []
 	},
 	{
 		name: 'Streaming',
 		outbound: t('outboundNames.Streaming'),
-		site_rules: ['netflix', 'hulu', 'disney', 'hbo', 'amazon','bahamut'],
-		ip_rules: []
+		site_rules: ['netflix', 'hulu', 'disney', 'hbo', 'amazon', 'primevideo', 'apple-tvplus', 'twitch', 'spotify', 'bahamut'],
+		ip_rules: ['netflix']
+	},
+	{
+		name: 'Streaming ID',
+		outbound: t('outboundNames.Streaming ID'),
+		site_rules: ['viu', 'iqiyi', 'bilibili'],
+		ip_rules: [],
+		domain_suffix: ['vidio.com', 'wetv.vip', 'iq.com', 'viu.com', 'bilibili.tv']
 	},
 	{
 		name: 'Gaming',
 		outbound: t('outboundNames.Gaming'),
-		site_rules: ['steam', 'epicgames', 'ea', 'ubisoft', 'blizzard'],
+		site_rules: ['steam', 'epicgames', 'ea', 'ubisoft', 'blizzard', 'riot', 'roblox', 'garena', 'mihoyo', 'tencent-games', 'category-games-!cn', 'category-game-platforms-download'],
+		ip_rules: []
+	},
+	{
+		name: 'E-commerce',
+		outbound: t('outboundNames.E-commerce'),
+		site_rules: ['category-ecommerce', 'shopee'],
 		ip_rules: []
 	},
 	{
@@ -102,14 +135,14 @@ export const UNIFIED_RULES = [
 	{
 		name: 'Financial',
 		outbound: t('outboundNames.Financial'),
-		site_rules: ['paypal', 'visa', 'mastercard','stripe','wise'],
+		site_rules: ['paypal', 'visa', 'mastercard', 'stripe', 'wise'],
 		ip_rules: []
 	},
 	{
 		name: 'Cloud Services',
 		outbound: t('outboundNames.Cloud Services'),
-		site_rules: ['aws', 'azure', 'digitalocean', 'heroku', 'dropbox'],
-		ip_rules: []
+		site_rules: ['aws', 'azure', 'digitalocean', 'heroku', 'dropbox', 'cloudflare', 'fastly'],
+		ip_rules: ['cloudfront']
 	},
 	{
 		name: 'Non-China',
@@ -119,7 +152,17 @@ export const UNIFIED_RULES = [
 	}
 ];
 
+
+// Returns true when a rule group should default to DIRECT (local traffic).
+export function isDirectRule(name) {
+	const rule = UNIFIED_RULES.find(r => r.name === name);
+	return !!(rule && rule.direct);
+}
+
 export const PREDEFINED_RULE_SETS = {
+	// Tuned for Indonesian users: local traffic stays direct, foreign
+	// streaming / social / AI traffic goes through the proxy.
+	indonesia: ['Ad Block', 'Private', 'Indonesia', 'Google', 'Youtube', 'Social Media', 'Communication', 'Streaming', 'Streaming ID', 'Gaming', 'E-commerce', 'AI Services', 'Telegram', 'Github', 'Education', 'Financial', 'Cloud Services', 'Non-China'],
 	minimal: ['Location:CN', 'Private', 'Non-China'],
 	balanced: ['Location:CN', 'Private', 'Non-China','Github', 'Google', 'Youtube', 'AI Services', 'Telegram'],
 	comprehensive: UNIFIED_RULES.map(rule => rule.name)
