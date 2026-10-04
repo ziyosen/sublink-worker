@@ -1,5 +1,5 @@
 import yaml from 'js-yaml';
-import { CLASH_CONFIG, generateRules, generateClashRuleSets, getOutbounds, PREDEFINED_RULE_SETS } from './config.js';
+import { CLASH_CONFIG, generateRules, generateClashRuleSets, getOutbounds, PREDEFINED_RULE_SETS, isDirectRule } from './config.js';
 import { BaseConfigBuilder } from './BaseConfigBuilder.js';
 import { DeepCopy } from './utils.js';
 import { t } from './i18n/index.js';
@@ -191,10 +191,13 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
     addOutboundGroups(outbounds, proxyList) {
         outbounds.forEach(outbound => {
             if (outbound !== t('outboundNames.Node Select')) {
+                const defaults = isDirectRule(outbound)
+                    ? ['DIRECT', t('outboundNames.Node Select'), ...proxyList.filter(p => p !== 'DIRECT')]
+                    : [t('outboundNames.Node Select'), ...proxyList];
                 this.config['proxy-groups'].push({
                     type: "select",
                     name: t(`outboundNames.${outbound}`),
-                    proxies: [t('outboundNames.Node Select'), ...proxyList]
+                    proxies: defaults
                 });
             }
         });
@@ -243,10 +246,10 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
         // domain & non-IP rules must precede IP rules
 
         rules.filter(rule => !!rule.domain_suffix || !!rule.domain_keyword).map(rule => {
-            rule.domain_suffix.forEach(suffix => {
+            (rule.domain_suffix || []).forEach(suffix => {
                 ruleResults.push(`DOMAIN-SUFFIX,${suffix},${t('outboundNames.'+ rule.outbound)}`);
             });
-            rule.domain_keyword.forEach(keyword => {
+            (rule.domain_keyword || []).forEach(keyword => {
                 ruleResults.push(`DOMAIN-KEYWORD,${keyword},${t('outboundNames.'+ rule.outbound)}`);
             });
         });
