@@ -6,6 +6,7 @@ export const generateStyles = () => `
      ========================================================================== */
 
   :root {
+    color-scheme: dark;
     --bg: #06070b;
     --bg-2: #0b0d14;
     --surface: rgba(255, 255, 255, 0.038);
@@ -41,6 +42,7 @@ export const generateStyles = () => `
   }
 
   body[data-theme="light"] {
+    color-scheme: light;
     --bg: #eef1f8;
     --bg-2: #e6eaf5;
     --surface: rgba(255, 255, 255, 0.74);
@@ -414,9 +416,11 @@ export const generateStyles = () => `
 
   .rule-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(215px, 1fr)); gap: 9px; }
   .rule-card {
+    position: relative;
     display: flex; align-items: flex-start; gap: 10px; cursor: pointer;
     padding: 12px; border-radius: var(--radius-xs);
     background: var(--surface); border: 1px solid var(--border);
+    color: var(--text);
     transition: all 0.18s var(--ease);
   }
   .rule-card:hover { border-color: var(--border-strong); background: var(--surface-2); transform: translateY(-1px); }
@@ -425,7 +429,7 @@ export const generateStyles = () => `
   .rule-card .r-ico svg { width: 20px; height: 20px; display: block; }
   .rule-card.checked .r-ico { color: var(--primary-2); }
   .rule-card .r-body { min-width: 0; }
-  .rule-card .r-name { font-size: 13px; font-weight: 600; display: block; }
+  .rule-card .r-name { font-size: 13px; font-weight: 600; display: block; color: var(--text); }
   .rule-card .r-desc { font-size: 11px; color: var(--text-3); line-height: 1.35; display: block; margin-top: 2px; }
   .rule-card .r-check {
     margin-left: auto; flex: none; width: 18px; height: 18px; border-radius: 6px;
@@ -714,9 +718,23 @@ export const generateStyles = () => `
 
   @media (max-width: 600px) {
     .hero { padding: 18px 4px 22px; }
-    .rule-grid { grid-template-columns: 1fr; gap: 7px; }
-    .rule-card { padding: 10px 11px; }
-    .rule-card .r-desc { font-size: 10.5px; }
+    .card-body { padding: 12px; }
+    .form-section { padding: 12px; }
+    /* Rules sit two-up on phones so the list stays short instead of scrolling forever */
+    .rule-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .rule-card {
+      flex-direction: column; align-items: flex-start; gap: 6px;
+      padding: 10px 11px; min-height: 64px;
+    }
+    .rule-card .r-ico { width: 17px; height: 17px; margin-top: 0; }
+    .rule-card .r-ico svg { width: 17px; height: 17px; }
+    .rule-card .r-body { width: 100%; }
+    .rule-card .r-name { font-size: 11.5px; line-height: 1.25; }
+    .rule-card .r-desc {
+      font-size: 9.5px; line-height: 1.3; margin-top: 1px;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .rule-card .r-check { position: absolute; top: 9px; right: 9px; margin: 0; width: 16px; height: 16px; }
     .preset-grid { grid-template-columns: repeat(2, 1fr); }
     .topbar { padding: 10px 2px; }
     .step .step-label { display: none; }
