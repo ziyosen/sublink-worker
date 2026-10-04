@@ -113,6 +113,7 @@ const generateHead = () => `
     <meta name="description" content="${t('pageDescription')}">
     <meta name="keywords" content="${t('pageKeywords')}">
     <meta name="theme-color" content="#07080c">
+    <meta name="color-scheme" content="dark light">
     <title>${t('pageTitle')}</title>
     <meta property="og:title" content="${t('ogTitle')}">
     <meta property="og:description" content="${t('ogDescription')}">
