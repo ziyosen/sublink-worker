@@ -4,7 +4,7 @@ import { ClashConfigBuilder } from './ClashConfigBuilder.js';
 import { SurgeConfigBuilder } from './SurgeConfigBuilder.js';
 import { decodeBase64, encodeBase64, GenerateWebPath } from './utils.js';
 import { PREDEFINED_RULE_SETS } from './config.js';
-import { t, setLanguage } from './i18n/index.js';
+import { t, setLanguage, getCurrentLang } from './i18n/index.js';
 import yaml from 'js-yaml';
 
 addEventListener('fetch', event => {
@@ -25,8 +25,9 @@ async function handleRequest(request) {
       const inputString = url.searchParams.get('config');
       let selectedRules = url.searchParams.get('selectedRules');
       let customRules = url.searchParams.get('customRules');
-      // 获取语言参数，如果为空则使用默认值
-      let lang = url.searchParams.get('lang') || 'zh-CN';
+      // Use the explicit lang param, otherwise the language negotiated from
+      // Accept-Language (never silently fall back to Chinese).
+      let lang = url.searchParams.get('lang') || getCurrentLang() || 'en-US';
       // Get custom UserAgent
       let userAgent = url.searchParams.get('ua');
       if (!userAgent) {
