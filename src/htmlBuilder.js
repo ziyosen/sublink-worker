@@ -1,32 +1,33 @@
 import { UNIFIED_RULES, PREDEFINED_RULE_SETS } from './config.js';
 import { generateStyles } from './style.js';
+import { iconSvg } from './icons.js';
 import { t, getCurrentLang } from './i18n/index.js';
 
 // Icon + short description for every rule group, so the picker reads like a
 // product instead of a wall of checkboxes.
 const RULE_META = {
-  'Ad Block':       { icon: '\uD83D\uDED1', id: 'Blokir iklan & tracker', en: 'Block ads & trackers' },
-  'AI Services':    { icon: '\uD83E\uDD16', id: 'ChatGPT, Gemini, Claude, dll', en: 'ChatGPT, Gemini, Claude, etc.' },
-  'Bilibili':       { icon: '\uD83D\uDCFA', id: 'Bilibili & video CN', en: 'Bilibili & CN video' },
-  'Youtube':        { icon: '\u25B6\uFE0F', id: 'YouTube & video', en: 'YouTube & video' },
-  'Google':         { icon: '\uD83D\uDD0D', id: 'Google, Gmail, Drive', en: 'Google, Gmail, Drive' },
-  'Private':        { icon: '\uD83C\uDFE0', id: 'Jaringan lokal / LAN', en: 'Local network / LAN' },
-  'Indonesia':      { icon: '\uD83C\uDDEE\uD83C\uDDE9', id: 'Situs & IP Indonesia (langsung)', en: 'Indonesian sites & IPs (direct)' },
-  'Location:CN':    { icon: '\uD83C\uDDE8\uD83C\uDDF3', id: 'Layanan Tiongkok', en: 'China services' },
-  'Telegram':       { icon: '\u2708\uFE0F', id: 'Telegram', en: 'Telegram' },
-  'Github':         { icon: '\uD83D\uDC19', id: 'GitHub & GitLab', en: 'GitHub & GitLab' },
-  'Microsoft':      { icon: '\uD83E\uDE9F', id: 'Microsoft & Office', en: 'Microsoft & Office' },
-  'Apple':          { icon: '\uD83C\uDF4E', id: 'Apple, iCloud, App Store', en: 'Apple, iCloud, App Store' },
-  'Social Media':   { icon: '\uD83D\uDCAC', id: 'IG, FB, X, TikTok', en: 'IG, FB, X, TikTok' },
-  'Communication':  { icon: '\uD83D\uDCDE', id: 'WhatsApp, LINE, Discord', en: 'WhatsApp, LINE, Discord' },
-  'Streaming':      { icon: '\uD83C\uDFAC', id: 'Netflix, Disney+, HBO, Spotify', en: 'Netflix, Disney+, HBO, Spotify' },
-  'Streaming ID':   { icon: '\uD83C\uDF7F', id: 'Vidio, Viu, WeTV, iQIYI', en: 'Vidio, Viu, WeTV, iQIYI' },
-  'Gaming':         { icon: '\uD83C\uDFAE', id: 'Steam, Epic, game mobile', en: 'Steam, Epic, mobile games' },
-  'E-commerce':     { icon: '\uD83D\uDED2', id: 'Shopee, Tokopedia, Lazada', en: 'Shopee, Tokopedia, Lazada' },
-  'Education':      { icon: '\uD83C\uDF93', id: 'Coursera, Udemy, kampus', en: 'Coursera, Udemy, campus' },
-  'Financial':      { icon: '\uD83D\uDCB3', id: 'PayPal, kartu, fintech', en: 'PayPal, cards, fintech' },
-  'Cloud Services': { icon: '\u2601\uFE0F', id: 'AWS, Azure, Cloudflare', en: 'AWS, Azure, Cloudflare' },
-  'Non-China':      { icon: '\uD83C\uDF10', id: 'Semua situs luar negeri', en: 'All foreign sites' }
+  'Ad Block':       { icon: 'shield-x', id: 'Blokir iklan & tracker', en: 'Block ads & trackers' },
+  'AI Services':    { icon: 'sparkles', id: 'ChatGPT, Gemini, Claude, dll', en: 'ChatGPT, Gemini, Claude, etc.' },
+  'Bilibili':       { icon: 'monitor-play', id: 'Bilibili & video CN', en: 'Bilibili & CN video' },
+  'Youtube':        { icon: 'youtube', id: 'YouTube & video', en: 'YouTube & video' },
+  'Google':         { icon: 'search', id: 'Google, Gmail, Drive', en: 'Google, Gmail, Drive' },
+  'Private':        { icon: 'home', id: 'Jaringan lokal / LAN', en: 'Local network / LAN' },
+  'Indonesia':      { icon: 'flag', id: 'Situs & IP Indonesia (langsung)', en: 'Indonesian sites & IPs (direct)' },
+  'Location:CN':    { icon: 'lock', id: 'Layanan Tiongkok', en: 'China services' },
+  'Telegram':       { icon: 'send', id: 'Telegram', en: 'Telegram' },
+  'Github':         { icon: 'code', id: 'GitHub & GitLab', en: 'GitHub & GitLab' },
+  'Microsoft':      { icon: 'grid', id: 'Microsoft & Office', en: 'Microsoft & Office' },
+  'Apple':          { icon: 'apple', id: 'Apple, iCloud, App Store', en: 'Apple, iCloud, App Store' },
+  'Social Media':   { icon: 'users', id: 'IG, FB, X, TikTok', en: 'IG, FB, X, TikTok' },
+  'Communication':  { icon: 'message', id: 'WhatsApp, LINE, Discord', en: 'WhatsApp, LINE, Discord' },
+  'Streaming':      { icon: 'film', id: 'Netflix, Disney+, HBO, Spotify', en: 'Netflix, Disney+, HBO, Spotify' },
+  'Streaming ID':   { icon: 'popcorn', id: 'Vidio, Viu, WeTV, iQIYI', en: 'Vidio, Viu, WeTV, iQIYI' },
+  'Gaming':         { icon: 'gamepad', id: 'Steam, Epic, game mobile', en: 'Steam, Epic, mobile games' },
+  'E-commerce':     { icon: 'shopping-bag', id: 'Shopee, Tokopedia, Lazada', en: 'Shopee, Tokopedia, Lazada' },
+  'Education':      { icon: 'graduation-cap', id: 'Coursera, Udemy, kampus', en: 'Coursera, Udemy, campus' },
+  'Financial':      { icon: 'credit-card', id: 'PayPal, kartu, fintech', en: 'PayPal, cards, fintech' },
+  'Cloud Services': { icon: 'cloud', id: 'AWS, Azure, Cloudflare', en: 'AWS, Azure, Cloudflare' },
+  'Non-China':      { icon: 'globe', id: 'Semua situs luar negeri', en: 'All foreign sites' }
 };
 
 // Decorative UI copy (self-contained, falls back to English).
@@ -68,7 +69,8 @@ const UI_TEXT = {
   selectNone:          { en: 'None', id: 'Kosong', zh: '\u6E05\u7A7A' },
   resultTitle:         { en: 'Your links are ready', id: 'Link kamu sudah siap', zh: '\u94FE\u63A5\u5DF2\u751F\u6210' },
   resultSubtitle:      { en: 'Copy, scan, or shorten \u2014 pick your client.', id: 'Salin, scan, atau pendekkan \u2014 pilih klienmu.', zh: '\u590D\u5236\u3001\u626B\u7801\u6216\u7F29\u77ED\u3002' },
-  copy:                { en: 'Copy', id: 'Salin', zh: '\u590D\u5236' }
+  copy:                { en: 'Copy', id: 'Salin', zh: '\u590D\u5236' },
+  customRulesHint:     { en: 'Advanced routing rules \u2014 optional', id: 'Aturan routing lanjutan \u2014 opsional', zh: '\u9AD8\u7EA7\u8DEF\u7531\u89C4\u5219\uFF08\u53EF\u9009\uFF09' }
 };
 
 const ui = (key) => {
@@ -79,11 +81,20 @@ const ui = (key) => {
   return e.en || key;
 };
 
-const ruleMeta = (name) => RULE_META[name] || { icon: '\uD83D\uDD17', id: '', en: '' };
+const ruleMeta = (name) => RULE_META[name] || { icon: 'link', id: '', en: '' };
 const ruleDesc = (name) => {
   const m = ruleMeta(name);
   return String(getCurrentLang() || 'en').startsWith('id') ? m.id : m.en;
 };
+
+// The rule labels in the i18n packs ship with emoji prefixes (useful inside the
+// generated client configs). The web UI uses real SVG icons instead, so strip
+// any leading/embedded pictographs from the labels shown on screen.
+const EMOJI_RE = /[\u{1F000}-\u{1FAFF}\u{2190}-\u{2BFF}\u{2460}-\u{24FF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{200D}\u{20E3}\u{1F3FB}-\u{1F3FF}]/gu;
+const cleanLabel = (value) => String(value == null ? '' : value)
+  .replace(EMOJI_RE, '')
+  .replace(/\s{2,}/g, ' ')
+  .trim();
 
 export function generateHtml(xrayUrl, singboxUrl, clashUrl, surgeUrl, baseUrl) {
   return `
@@ -193,8 +204,6 @@ const generateStepper = () => `
 const generateFooter = () => `
   <div class="footer-note">
     <span>${ui('footerNote')}</span>
-    <span class="sep">&middot;</span>
-    <a href="https://github.com/ziyosen/sublink-worker" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i> sublink-worker</a>
     <span class="sep">&middot;</span>
     <a href="https://t.me/Bleszh" target="_blank" rel="noopener noreferrer"><i class="fab fa-telegram"></i> Telegram</a>
   </div>
@@ -587,11 +596,11 @@ const generateRuleSetSelection = () => `
     </select>
 
     <div class="preset-grid" id="presetGrid">
-      ${generatePresetCard('indonesia', '\uD83C\uDDEE\uD83C\uDDE9', ui('presetIndonesia'), ui('presetIndonesiaDesc'))}
-      ${generatePresetCard('balanced', '\u2696\uFE0F', t('balanced'), ui('presetBalancedDesc'))}
-      ${generatePresetCard('minimal', '\uD83E\uDEB6', t('minimal'), ui('presetMinimalDesc'))}
-      ${generatePresetCard('comprehensive', '\uD83E\uDDF0', t('comprehensive'), ui('presetComprehensiveDesc'))}
-      ${generatePresetCard('custom', '\uD83D\uDEE0\uFE0F', t('custom'), ui('presetCustomDesc'))}
+      ${generatePresetCard('indonesia', 'flag', ui('presetIndonesia'), ui('presetIndonesiaDesc'))}
+      ${generatePresetCard('balanced', 'scale', t('balanced'), ui('presetBalancedDesc'))}
+      ${generatePresetCard('minimal', 'feather', t('minimal'), ui('presetMinimalDesc'))}
+      ${generatePresetCard('comprehensive', 'layers', t('comprehensive'), ui('presetComprehensiveDesc'))}
+      ${generatePresetCard('custom', 'wrench', t('custom'), ui('presetCustomDesc'))}
     </div>
 
     <div class="rule-toolbar">
@@ -614,7 +623,7 @@ const generateRuleSetSelection = () => `
 const generatePresetCard = (value, icon, name, desc) => `
   <button type="button" class="preset-card" data-preset="${value}" onclick="applyPredefinedRules('${value}')">
     <span class="p-check"><i class="fas fa-check"></i></span>
-    <span class="p-ico">${icon}</span>
+    <span class="p-ico">${iconSvg(icon)}</span>
     <b>${name}</b>
     <small>${desc}</small>
   </button>
@@ -625,9 +634,9 @@ const generateRuleCheckbox = (rule) => {
   return `
   <label class="rule-card" for="${rule.name}">
     <input class="rule-checkbox" type="checkbox" value="${rule.name}" id="${rule.name}" name="selectedRules">
-    <span class="r-ico">${meta.icon}</span>
+    <span class="r-ico">${iconSvg(meta.icon)}</span>
     <span class="r-body">
-      <span class="r-name">${t('outboundNames.' + rule.name)}</span>
+      <span class="r-name">${cleanLabel(t('outboundNames.' + rule.name))}</span>
       <span class="r-desc">${ruleDesc(rule.name)}</span>
     </span>
     <span class="r-check"><i class="fas fa-check"></i></span>
@@ -635,9 +644,17 @@ const generateRuleCheckbox = (rule) => {
 };
 
 const generateCustomRulesSection = () => `
-  <div class="mt-2">
+  <div class="custom-rules-panel" id="customRulesPanel">
     <div class="custom-rules-section-header">
-      <h5 class="custom-rules-section-title">${t('customRulesSection')}</h5>
+      <button type="button" class="custom-rules-toggle" id="customRulesToggle" onclick="toggleCustomRulesPanel()" aria-expanded="false">
+        <span class="crt-ico">${iconSvg('sliders')}</span>
+        <span class="crt-text">
+          <b>${t('customRulesSection')}</b>
+          <small>${ui('customRulesHint')}</small>
+        </span>
+        <span class="crt-badge" id="customRulesBadge">0</span>
+        <i class="fas fa-chevron-down crt-chevron"></i>
+      </button>
       <span class="tooltip-icon">
         <i class="fas fa-question-circle"></i>
         <span class="tooltip-content">
@@ -645,7 +662,7 @@ const generateCustomRulesSection = () => `
         </span>
       </span>
     </div>
-    <div class="custom-rules-container">
+    <div class="custom-rules-container" id="customRulesContainer">
       ${generateCustomRulesTabs()}
       ${generateCustomRulesContent()}
     </div>
@@ -701,7 +718,7 @@ const generateJSONView = () => `
       <div class="mb-2">
         <label class="form-label">${t('customRuleJSON')}</label>
         <div class="json-textarea-container">
-          <textarea class="form-control json-textarea" name="customRuleJSON[]" rows="15"
+          <textarea class="form-control json-textarea" name="customRuleJSON[]" rows="8"
                     oninput="validateJSONRealtime(this)"></textarea>
           <div class="json-validation-message" style="display: none;"></div>
         </div>
@@ -970,6 +987,7 @@ const submitFormFunction = () => `
               jsonTextarea.value = JSON.stringify(rules, null, 2);
               validateJSONRealtime(jsonTextarea);
             }
+            toggleCustomRulesPanel(true);
           }
         } catch (e) {
           console.error('Error parsing custom rules:', e);
@@ -1198,9 +1216,39 @@ const customRuleFunctions = () => `
     }
   }
 
+  function countCustomRules() {
+    let total = document.querySelectorAll('.custom-rule').length;
+    const jsonTextarea = document.querySelector('#customRulesJSON textarea');
+    if (jsonTextarea && jsonTextarea.value.trim()) {
+      try {
+        const parsed = JSON.parse(jsonTextarea.value.trim());
+        if (Array.isArray(parsed)) {
+          total = parsed.filter(r => r && r.name && String(r.name).trim()).length;
+        }
+      } catch (e) { /* invalid JSON is ignored for the badge */ }
+    }
+    return total;
+  }
+
   function updateEmptyMessages() {
     const hasFormRules = document.querySelectorAll('.custom-rule').length > 0;
-    document.getElementById('emptyFormMessage').style.display = hasFormRules ? 'none' : 'block';
+    const emptyMessage = document.getElementById('emptyFormMessage');
+    if (emptyMessage) emptyMessage.style.display = hasFormRules ? 'none' : 'block';
+    const badge = document.getElementById('customRulesBadge');
+    if (badge) {
+      const count = countCustomRules();
+      badge.textContent = count;
+      badge.classList.toggle('has-rules', count > 0);
+    }
+  }
+
+  function toggleCustomRulesPanel(force) {
+    const panel = document.getElementById('customRulesPanel');
+    if (!panel) return;
+    const open = typeof force === 'boolean' ? force : !panel.classList.contains('open');
+    panel.classList.toggle('open', open);
+    const toggle = document.getElementById('customRulesToggle');
+    if (toggle) toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
   }
 
   function addCustomRule() {
@@ -1436,16 +1484,17 @@ const customRuleFunctions = () => `
       }
       // Valid JSON
       textarea.classList.add('json-valid');
-      messageDiv.textContent = \`✓ ${t('validJSON')} (\${rules.length} ${t('rules')})\`;
+      messageDiv.textContent = \`${t('validJSON')} (\${rules.length} ${t('rules')})\`;
       messageDiv.classList.add('valid');
       messageDiv.style.display = 'block';
     } catch (error) {
       // Invalid JSON
       textarea.classList.add('json-invalid');
-      messageDiv.textContent = \`✗ \${error.message}\`;
+      messageDiv.textContent = \`${t('invalidJSON')}: \${error.message}\`;
       messageDiv.classList.add('invalid');
       messageDiv.style.display = 'block';
     }
+    updateEmptyMessages();
   }
 
   function validateJSON() {
@@ -1457,7 +1506,7 @@ const customRuleFunctions = () => `
       if (textarea.classList.contains('json-invalid')) {
         allValid = false;
         const messageDiv = textarea.parentNode.querySelector('.json-validation-message');
-        errorMessages.push(\`JSON #\${index + 1}: \${messageDiv.textContent.replace('✗ ', '')}\`);
+        errorMessages.push(\`JSON #\${index + 1}: \${messageDiv.textContent}\`);
       }
     });
     if (allValid) {
@@ -1544,7 +1593,7 @@ const customRuleFunctions = () => `
       <div class="mb-2">
         <label class="form-label">${t('customRuleJSON')}</label>
         <div class="json-textarea-container">
-          <textarea class="form-control json-textarea" name="customRuleJSON[]" rows="15"
+          <textarea class="form-control json-textarea" name="customRuleJSON[]" rows="8"
                     oninput="validateJSONRealtime(this)"></textarea>
           <div class="json-validation-message" style="display: none;"></div>
         </div>
