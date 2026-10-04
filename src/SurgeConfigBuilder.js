@@ -1,5 +1,5 @@
 import { BaseConfigBuilder } from './BaseConfigBuilder.js';
-import { SURGE_CONFIG, SURGE_SITE_RULE_SET_BASEURL, SURGE_IP_RULE_SET_BASEURL, generateRules, getOutbounds, PREDEFINED_RULE_SETS } from './config.js';
+import { SURGE_CONFIG, SURGE_SITE_RULE_SET_BASEURL, SURGE_IP_RULE_SET_BASEURL, generateRules, getOutbounds, PREDEFINED_RULE_SETS  } from './config.js';
 import { t } from './i18n/index.js';
 
 export class SurgeConfigBuilder extends BaseConfigBuilder {
@@ -174,6 +174,8 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
     addOutboundGroups(outbounds, proxyList) {
         outbounds.forEach(outbound => {
             if (outbound !== t('outboundNames.Node Select')) {
+                // Surge's createProxyGroup already puts DIRECT first, so local
+                // rules are direct by default without extra handling.
                 this.config['proxy-groups'].push(
                     this.createProxyGroup(t(`outboundNames.${outbound}`), 'select', [t('outboundNames.Node Select')])
                 );
