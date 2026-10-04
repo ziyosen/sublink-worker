@@ -15,8 +15,8 @@ export const generateStyles = () => `
     --border: rgba(255, 255, 255, 0.085);
     --border-strong: rgba(255, 255, 255, 0.17);
     --text: #f2f4fa;
-    --text-2: #aab0c3;
-    --text-3: #6e7488;
+    --text-2: #b6bccd;
+    --text-3: #8b92a8;
     --primary: #6366f1;
     --primary-2: #818cf8;
     --primary-3: #a5b4fc;
@@ -50,8 +50,8 @@ export const generateStyles = () => `
     --border: rgba(15, 23, 42, 0.10);
     --border-strong: rgba(15, 23, 42, 0.20);
     --text: #0f1425;
-    --text-2: #47506a;
-    --text-3: #7a8399;
+    --text-2: #3f4860;
+    --text-3: #5f6880;
     --primary-soft: rgba(99, 102, 241, 0.12);
     --shadow: 0 20px 55px -24px rgba(30, 41, 90, 0.38);
     --shadow-soft: 0 8px 26px -16px rgba(30, 41, 90, 0.30);
@@ -370,6 +370,8 @@ export const generateStyles = () => `
     position: relative; text-align: left; cursor: pointer;
     padding: 15px; border-radius: var(--radius-sm);
     background: var(--surface); border: 1px solid var(--border);
+    color: var(--text);
+    font-family: inherit;
     transition: all 0.22s var(--ease);
   }
   .preset-card:hover { border-color: var(--border-strong); transform: translateY(-3px); box-shadow: var(--shadow-soft); }
@@ -385,8 +387,8 @@ export const generateStyles = () => `
   }
   .preset-card .p-ico svg { width: 18px; height: 18px; display: block; }
   .preset-card.active .p-ico { background: var(--surface-3); border-color: rgba(99,102,241,0.35); }
-  .preset-card b { display: block; font-size: 13.5px; margin-bottom: 3px; }
-  .preset-card small { color: var(--text-3); font-size: 11.5px; line-height: 1.45; display: block; }
+  .preset-card b { display: block; font-size: 13.5px; margin-bottom: 3px; color: var(--text); }
+  .preset-card small { color: var(--text-2); font-size: 11.5px; line-height: 1.45; display: block; }
   .preset-card.active small { color: var(--text-2); }
   .preset-card .p-check {
     position: absolute; top: 13px; right: 13px; width: 19px; height: 19px; border-radius: 50%;
